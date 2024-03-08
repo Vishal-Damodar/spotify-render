@@ -41,6 +41,7 @@
     <p class="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-md mb-6 max-w-md mx-auto">Spotify doesn't let you share your Liked songs with others.</p>
     <p class="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-md mb-6 max-w-md mx-auto">Convert your Liked songs into a playlist and share with others seamlessly.</p>
     <p class="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-md mb-6 max-w-md mx-auto">The login is done by Spotify and hence no risk of data insecurity.</p>
+    <p class="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-md mb-6 max-w-md mx-auto">You have evidence of data leak due to this webApp? Sue me! Thats how safe it is.</p>
     <button id="login-button" data-bind-onclick="loginWithSpotifyClick();" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded transition duration-300">Log in with Spotify</button>
   </template>
   
@@ -130,7 +131,9 @@
 
                   // Extract track IDs and add them to the trackUris array
                   likedSongs.forEach(song => {
-                    
+                      const listItem = document.createElement('li');
+                      listItem.textContent = song.track.name;
+                      likedSongsList.appendChild(listItem);
                       trackUris.push(song.track.uri);
                   });
 
