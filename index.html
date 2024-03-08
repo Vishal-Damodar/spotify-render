@@ -1,0 +1,253 @@
+    <!DOCTYPE html>
+    <html>
+
+    <head>
+      <title>Example of the Authorization Code with PKCE flow with Spotify</title>
+      <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body>
+
+      <div id="main"></div>
+      <div id="oauth"></div>
+      <div id="fetch"></div>
+
+      <template id="login">
+        <h1>Welcome to the OAuth2 PKCE Example</h1>
+        <button id="login-button" data-bind-onclick="loginWithSpotifyClick();"> Log in with Spotify </button>
+      </template>
+
+      <template id="logged-in-template">
+        <h1>Logged in as <span data-bind="display_name"></span></h1>
+        <img width="150" data-bind-src="images[0].url" data-bind-alt="display_name" />
+    <table>
+      <tr>
+        <td>Display name</td>
+        <td data-bind="display_name"></td>
+      </tr>
+      <tr>
+        <td>Id</td>
+        <td data-bind="id"></td>
+      </tr>
+      <tr>
+        <td>Email</td>
+        <td data-bind="email"></td>
+      </tr>
+      <tr>
+        <td>Spotify URI</td>
+        <td>
+          <a data-bind="external_urls.spotify" data-bind-href="external_urls.spotify"></a>
+        </td>
+      </tr>
+      <tr>
+        <td>Link </dt>
+        <td>
+          <a data-bind="href" data-bind-href="href"></a>
+        </td>
+      </tr>
+      <tr>
+        <td>Profile Image</td>
+        <td>
+          <a data-bind-href="images[0].url" data-bind="images[0].url"></a>
+        </td>
+      </tr>
+      <tr>
+        <td>Country</td>
+        <td data-bind="country"></td>
+      </tr>
+    </table>
+
+    <button id="refresh-token-button" data-bind-onclick="refreshTokenClick();">Refresh Token</button>
+    <button id="logout-button" data-bind-onclick="logoutClick();">Log out</button>
+  </template>
+
+  <template id="oauth-template">
+    <h2>oAuth info</h2>
+    <table>
+      <tr>
+        <td>Access token</td>
+        <td data-bind="access_token"></td>
+      </tr>
+      <tr>
+        <td>Refresh token</td>
+        <td data-bind="refresh_token"></td>
+      </tr>
+      <tr>
+        <td>Expiration at</td>
+        <td data-bind="expires">${getExpirationDate(expires_in)}</td>
+      </tr>
+    </table>
+  </template>
+
+  <script src="script.js" type="module"></script>
+  <template id="Fetch">
+  <h1>My Liked Songs</h1>
+  <ul id="liked-songs"></ul>
+    
+  <button id="fetch-songs-button">Fetch Liked Songs</button><button id="addToPlaylistButton">Add to Playlist</button>
+  <script>
+    const trackUris = [];
+     let playlistId;
+    document.getElementById('fetch-songs-button').addEventListener('click', function() {
+      const accessToken = localStorage.getItem('access_token');
+
+      if (!accessToken) {
+          console.error("Access token not found in local storage.");
+      }
+      
+    var market = 'US'; // Replace 'US' with the desired market (e.g., 'US', 'GB', 'FR', etc.)
+        var limit = 50; // Maximum number of tracks to return per request
+        var offset = 0; // Initial offset value
+
+        var myHeaders = new Headers();
+        myHeaders.append("Authorization", "Bearer " + accessToken);
+
+        var requestOptions = {
+            method: 'GET',
+            headers: myHeaders,
+            redirect: 'follow'
+        };
+
+        var likedSongsList = document.getElementById('liked-songs');
+
+        // Function to fetch liked songs with pagination
+      function fetchLikedSongs() {
+          var url = `https://api.spotify.com/v1/me/tracks?market=${market}&limit=${limit}&offset=${offset}`;
+
+          fetch(url, requestOptions)
+              .then(response => {
+                  if (!response.ok) {
+                      throw new Error('Network response was not ok');
+                  }
+                  return response.json();
+              })
+              .then(data => {
+                  // Process the response data and store track IDs
+                  const likedSongs = data.items;
+                  if (likedSongs.length === 0) {
+                      // No more songs to fetch, exit the function
+                      return;
+                  }
+
+                  // Extract track IDs and add them to the trackUris array
+                  likedSongs.forEach(song => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = song.track.name;
+                    likedSongsList.appendChild(listItem);
+                      trackUris.push(song.track.uri);
+                  });
+
+                  // Increment offset for the next page
+                  offset += limit;
+
+                  // Fetch next page of liked songs
+                  fetchLikedSongs();
+              })
+              .catch(error => console.error('Error fetching liked songs:', error));
+      }
+
+
+        // Clear previous content
+        likedSongsList.innerHTML = '';
+
+        // Start fetching liked songs
+        fetchLikedSongs();
+    });
+    
+  </script>
+
+    <script> //Creating playlist
+      const accessToken = localStorage.getItem('access_token');
+      const userid = localStorage.getItem('id');
+
+      var myHeaders = new Headers();
+      myHeaders.append("Authorization", "Bearer " + accessToken);
+      myHeaders.append("Content-Type", "application/json");
+
+      var raw = JSON.stringify({
+          "collaborative": true,
+          "description": "Converted Liked songs into playlist",
+          "name": "Vishal",
+          "public": true
+      });
+
+      var requestOptions = {
+          method: 'POST',
+          headers: myHeaders,
+          body: raw,
+          redirect: 'follow'
+      };
+
+      fetch("https://api.spotify.com/v1/users/" + userid + "/playlists", requestOptions)
+          .then(response => response.json()) // Parse response as JSON
+          .then(data => {
+              // Extract playlist_id from the response
+              playlistId = data.id;
+              console.log('Playlist ID:', playlistId);
+
+              // Now you can store playlistId in a variable or use it as needed
+          })
+          .catch(error => console.error('Error creating playlist:', error));
+    </script>
+
+
+    <script> //Adding items to playlist
+        const currentToken = {
+            get access_token() {
+                return localStorage.getItem('access_token') || null;
+            }
+        };
+        console.log(playlistId);
+        async function addToPlaylist(playlistId, trackUris) {
+      const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+          const headers = {
+              'Authorization': 'Bearer ' + currentToken.access_token,
+              'Content-Type': 'application/json'
+          };
+
+          // Function to add tracks in batches of 100
+          const batchSize = 100;
+          const batches = [];
+          for (let i = 0; i < trackUris.length; i += batchSize) {
+              const batch = trackUris.slice(i, i + batchSize);
+              batches.push(batch);
+          }
+
+          const results = [];
+          for (const batch of batches) {
+              const response = await fetch(url, {
+                  method: 'POST',
+                  headers: headers,
+                  body: JSON.stringify({ uris: batch })
+              });
+
+              if (!response.ok) {
+                  throw new Error('Failed to add tracks to playlist');
+              }
+
+              const data = await response.json();
+              results.push(data);
+          }
+
+          return results;
+      }
+
+        document.getElementById('addToPlaylistButton').addEventListener('click', async () => {
+            try {
+                console.log(trackUris);
+                const result = await addToPlaylist(playlistId, trackUris);
+                console.log('Tracks added to playlist:', result);
+                alert('Tracks added to playlist successfully!');
+            } catch (error) {
+                console.error('Error adding tracks to playlist:', error.message);
+                alert('Failed to add tracks to playlist');
+            }
+        });
+    </script>
+
+    
+    </template>
+  
+</body>
+
+</html>
