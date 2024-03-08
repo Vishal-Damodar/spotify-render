@@ -62,8 +62,8 @@ if (code) {
 if (currentToken.access_token) {
   const userData = await getUserData();
   currentUserData.save(userData);
-  renderTemplate("main", "logged-in-template", userData);
-  renderTemplate("oauth", "oauth-template", currentToken);
+  //renderTemplate("main", "logged-in-template", userData);
+  //renderTemplate("oauth", "oauth-template", currentToken);
   renderTemplate("fetch", "Fetch", currentToken);
 }
 
@@ -161,7 +161,7 @@ async function logoutClick() {
 async function refreshTokenClick() {
   const token = await refreshToken();
   currentToken.save(token);
-  renderTemplate("oauth", "oauth-template", currentToken);
+  //renderTemplate("oauth", "oauth-template", currentToken);
   renderTemplate("fetch", "Fetch", currentToken);
 }
 
@@ -196,3 +196,5 @@ function renderTemplate(targetId, templateId, data = null) {
   target.innerHTML = "";
   target.appendChild(clone);
 }
+
+
