@@ -1,5 +1,5 @@
 const clientId = 'e64876224af34b328c1711d021efffe8'; // your clientId          
-const redirectUrl = 'https://8405497e-992c-4217-a051-b9eff286d905-00-o16qib118ay1.sisko.replit.dev/';        // your redirect URL - must be localhost URL and/or HTTPS
+const redirectUrl = 'https://spotify-convert-liked-playlist.onrender.com/';        // your redirect URL - must be localhost URL and/or HTTPS
 
 const authorizationEndpoint = "https://accounts.spotify.com/authorize";
 const tokenEndpoint = "https://accounts.spotify.com/api/token";
