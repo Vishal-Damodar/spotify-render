@@ -22,6 +22,38 @@
       }
     }
   </style>
+  <style>
+    
+    .loader-container {
+      position: relative;
+      display: flex; /* Use flexbox for centering */
+      justify-content: center; /* Center horizontally */
+      align-items: center; /* Center vertically */
+      margin-bottom: 0px; /* Add some margin to separate from other elements */
+    }
+
+    .loader {
+      border: 16px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 16px solid #1DB954; /* Change color to Spotify green */
+      width: 120px;
+      height: 120px;
+      -webkit-animation: spin 2s linear infinite;
+      animation: spin 2s linear infinite;
+      display: none;
+    }
+
+  /* Safari */
+  @-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  </style>
 </head>
 
 <body class="font-sans bg-gray-900 text-white">
@@ -32,11 +64,13 @@
   <div id="fetch" class="text-center mt-10">
     <!-- Content here -->
   </div>
+  
 
   <template id="login" class="hidden">
     <h1 class="flex items-center justify-center spotify-text">
-      <span>Spotify</span>
-      <img class="h-12 w-18 ml-3.5" src="spotify_symbol.png" alt="Spotify Logo"> <!-- Replace src with the path to your Spotify logo image -->
+      <div style="width: 300px; height: 100px; display: flex; justify-content: center; align-items: center;">
+        <img src="Spotify_Logo_RGB_Green.png" alt="Spotify Logo" style="max-width: 100%; max-height: 100%;">
+      </div>
     </h1>
     <p class="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-md mb-6 max-w-md mx-auto">Spotify doesn't let you share your Liked songs with others.</p>
     <p class="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-md mb-6 max-w-md mx-auto">Convert your Liked songs into a playlist and share with others seamlessly.</p>
@@ -48,17 +82,25 @@
   <script src="script.js" type="module"></script>
   
   <template id="Fetch" class="hidden">
-    <h1 class="text-4xl font-bold mb-6">Convert your Liked Songs into a playlist!</h1>
+    <h1 class="flex items-center justify-center spotify-text">
+      <div style="width: 300px; height: 100px; display: flex; justify-content: center; align-items: center;">
+        <img src="Spotify_Logo_RGB_Green.png" alt="Spotify Logo" style="max-width: 100%; max-height: 100%;">
+      </div>
+    </h1>
+    <h1 id="heading" class="text-4xl font-bold mb-6">Convert your Liked Songs into a playlist!</h1>
     <ul id="liked-songs"></ul>  
 
     <button id="fetch-songs-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded transition duration-300">Fetch Liked Songs</button>
+    <div class="loader-container"> <!-- Container for loader -->
+      <div class="loader" id="loader"></div>
+    </div>
     <br><br>
-    <button id="addToPlaylistButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded transition duration-300">Convert into Playlist</button>
-    <br><br>
+    <button id="addToPlaylistButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded transition duration-300" style="display: none;"></button>
+    
     
     <button id="log-out" data-bind-onclick="logoutClick();" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded transition duration-300">Log out</button>
 
-    <script> //Creating playlist
+    <script>//Creating playlist
       accessToken = localStorage.getItem('access_token');
       const userid = localStorage.getItem('id');
       var myHeaders = new Headers();
@@ -93,8 +135,16 @@
   <script>
     const trackUris = [];
      let playlistId;
+    
+    const button = document.getElementById('addToPlaylistButton');
 
      document.getElementById('fetch-songs-button').addEventListener('click', function() {
+       const button1 = document.getElementById('fetch-songs-button');
+     
+       button1.style.display = 'none';
+       document.getElementById("loader").style.display = "block";
+ 
+
       const accessToken = localStorage.getItem('access_token');
 
       if (!accessToken) {
@@ -131,14 +181,16 @@
                   // Process the response data and store track IDs
                   const likedSongs = data.items;
                   if (likedSongs.length === 0) {
+                    
+                   button.click();
                       return;
                   }
 
                   // Extract track IDs and add them to the trackUris array
                   likedSongs.forEach(song => {
-                      const listItem = document.createElement('li');
-                      listItem.textContent = song.track.name;
-                      likedSongsList.appendChild(listItem);
+                      // const listItem = document.createElement('li');
+                      // listItem.textContent = song.track.name;
+                      // likedSongsList.appendChild(listItem);
                       trackUris.push(song.track.uri);
                   });
 
@@ -198,14 +250,23 @@
           return results;
       }
 
-        document.getElementById('addToPlaylistButton').addEventListener('click', async () => {
+document.getElementById('addToPlaylistButton').addEventListener('click', async () => {
+  const heading = document.getElementById('heading');
+  
             try {
                 const result = await addToPlaylist(playlistId, trackUris);
-                alert('Tracks added to playlist! Check your app.');
-                     
-            } catch (error) {
-                console.error('Error adding tracks to playlist:', error.message);
-                alert('Failed to add tracks to playlist');
+              document.getElementById("loader").style.display = "none";
+              
+              
+              
+              // Change the text content of the h1 element
+              heading.textContent = "Playlist Added. Check your Spotify. Dont forget to logout.";              
+            } 
+            catch (error) {
+              heading.textContent = "Server issue, please log out and try again.";
+              document.getElementById("loader").style.display = "none";
+              
+                console.error('Error adding tracks to playlist:', error.message);           
             }
         });
     </script>  

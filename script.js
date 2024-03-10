@@ -1,10 +1,11 @@
 const clientId = "e64876224af34b328c1711d021efffe8"; // your clientId          
-
-        const redirectUrl = "https://spotify-convert.netlify.app/";         // your redirect URL - must be localhost URL and/or HTTPS
+const redirectUrl = "https://d28e49d0-8cef-4c4d-895e-c96b6d796590-00-23himcpaini7l.sisko.replit.dev/";         // your redirect URL - must be localhost URL and/or HTTPS
 
 const authorizationEndpoint = "https://accounts.spotify.com/authorize";
 const tokenEndpoint = "https://accounts.spotify.com/api/token";
-const scope = 'user-read-private user-read-email playlist-read-private user-library-read ugc-image-upload playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-modify user-follow-read user-top-read user-read-playback-position user-library-modify';
+// const scope = 'user-read-private user-read-email playlist-read-private user-library-read ugc-image-upload playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-modify user-follow-read user-top-read user-read-playback-position user-library-modify';
+
+const scope = "user-read-private playlist-modify-public user-library-read"
 
 // Data structure that manages the current active token, caching it in localStorage
 const currentToken = {
